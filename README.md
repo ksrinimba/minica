@@ -17,6 +17,30 @@ will not overwrite existing keys or certificates.
 
 The certificate will have a validity of 2 years and 30 days.
 
+Added -roles option
+
+minica -domains localhost -roles "spinn1%0Aspin2%0Aadmin"
+
+check with 
+
+openssl x509 -in cert.pem -text -noout
+
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                keyid:91:CB:EE:37:32:22:2C:F5:16:BE:38:EF:ED:A4:0E:49:00:24:BF:B5
+
+            X509v3 Subject Alternative Name: 
+                DNS:localhost
+            1.2.840.10070.8.1: 
+                spinn1%0Aspin2%0Aadmin
+
+
 # Installation
 
 First, install the [Go tools](https://golang.org/dl/) and set up your `$GOPATH`.
