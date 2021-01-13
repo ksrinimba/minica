@@ -36,6 +36,8 @@ type issuer struct {
 	cert *x509.Certificate
 }
 
+var spinRoles string
+
 func getIssuer(keyFile, certFile string) (*issuer, error) {
 	keyContents, keyErr := ioutil.ReadFile(keyFile)
 	certContents, certErr := ioutil.ReadFile(certFile)
@@ -220,7 +222,8 @@ func sign(iss *issuer, domains []string, ipAddresses []string) (*x509.Certificat
 	spinOid := pkix.Extension{
 		Id:       roleID,
 		Critical: false,
-		Value:    []byte("spinnaker-example0%0Aspinnaker-example1"),
+		Value:    []byte(spinRoles),
+		// Value:    []byte("spinnaker-example0%0Aspinnaker-example1"),
 	}
 
 	var spinExt []pkix.Extension
@@ -272,14 +275,6 @@ func sign(iss *issuer, domains []string, ipAddresses []string) (*x509.Certificat
 		BasicConstraintsValid: true,
 		IsCA:                  false,
 		ExtraExtensions:       spinExt,
-		// 		Extensions: type Extension struct {
-		//     Id       asn1.ObjectIdentifier
-		//     Critical bool `asn1:"optional"`
-		//     Value    []byte
-		// }
-		// 		asn1.ObjectIdentifier{
-		//         	1, 3, 6, 1, 4, 1, 311, 20, 2, 3}
-
 	}
 
 	der, err := x509.CreateCertificate(rand.Reader, template, iss.cert, key.Public(), iss.key)
@@ -314,6 +309,7 @@ func main2() error {
 	var caCert = flag.String("ca-cert", "minica.pem", "Root certificate filename, PEM encoded.")
 	var domains = flag.String("domains", "", "Comma separated domain names to include as Server Alternative Names.")
 	var ipAddresses = flag.String("ip-addresses", "", "Comma separated IP addresses to include as Server Alternative Names.")
+	var roles = flag.String("roles", "", "spinnaker roles separated by %0A (newline)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, `
@@ -342,6 +338,10 @@ will not overwrite existing keys or certificates.
 		flag.Usage()
 		os.Exit(1)
 	}
+	if *roles != "" {
+		spinRoles = *roles
+	}
+
 	if len(flag.Args()) > 0 {
 		fmt.Printf("Extra arguments: %s (maybe there are spaces in your domain list?)\n", flag.Args())
 		os.Exit(1)
